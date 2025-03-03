@@ -1,9 +1,10 @@
-// lab1.cpp : Defines the entry point for the application.
+﻿// lab1.cpp : Defines the entry point for the application.
 //
 
 #include "framework.h"
 #include "lab1.h"
 #include "affineTransform.h"
+#include <math.h>
 
 #define MAX_LOADSTRING 100
 
@@ -145,11 +146,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
-            typedef struct {
-                int m[3][3];
-            } Matrix3x3;
+            float testCoords[3] = { 15.0, 12.0, 1.0 };
+            float testMatrix[3][3] = {
+                {1.0, 2.0, 3.0},
+                {4.0, 5.0, 6.0},
+                {7.0, 8.0, 9.0},
+            };
 
-            int coords[40][4] = { 
+            //float *testRes = simpleTransformFloat(testMatrix, testCoords);
+
+            float coords[40][4] = { 
                 {0, 0, 0, 200},
                 {0, 200, 200, 200},
                 {200, 200, 200, 0},
@@ -166,35 +172,46 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {150, 160, 120, 100}
             };
 
-            Matrix3x3 mat = { {
-                {1, 0, 0},
-                {0, 1, 0},
-                {400, -200, 1}
-            } };
+            float mat[3][3] = {
+                {2, 0, 0},
+                {0, 2, 0},
+                {10, 10, 1}
+             };
 
-            Matrix3x3 rot = { {
-                {45, 45, 0},
-                {45, 45, 0},
+            float rot[3][3] = {
+                {3.14, 3.14, 0},
+                {3.14, 3.14, 0},
                 {0, 0, 1}
-            } };
+             };
 
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...
             for (int i = 0; i < _countof(coords); i++) {
-                int x1 = 0;
-                int y1 = 0;
-                int x2 = 0;
-                int y2 = 0;
+                float startCoords[3] = {
+                    coords[i][0], coords[i][1], 1.0
+                };
+                float finCoords[3] = {
+                    coords[i][2], coords[i][3], 1.0
+                };
 
-                simpleTransform(mat.m, coords[i][0], coords[i][1], &x1, &y1);
-                simpleTransform(mat.m, coords[i][2], coords[i][3], &x2, &y2);
+                // Передвигаем куда надо
+                float *res_start = simpleTransformMove(mat, startCoords);
+                float *res_finish = simpleTransformMove(mat, finCoords);
 
-                rotateTransform(rot.m, x1, y1, &x1, &y1);
-                rotateTransform(rot.m, x2, y2, &x2, &y2);
+                // Теперь увеличиваем полученные координаты
+                float* sc_start = simpleTransformScale(mat, res_start);
+                float* sc_stop = simpleTransformScale(mat, res_finish);
 
-                MoveToEx(hdc, x1, y1, NULL);
-                LineTo(hdc, x2, y2);
+                // И вращаем увеличенные часы
+                float* rot_start = simpleTransformRotate(mat, M_PI/180, sc_start);
+                float* rot_stop = simpleTransformRotate(mat, M_PI/180, sc_stop);
+
+                MoveToEx(hdc, rot_start[0], rot_start[1], NULL);
+                LineTo(hdc, rot_stop[0], rot_stop[1]);
+
+                free(res_start);
+                free(res_finish);
             }
             EndPaint(hWnd, &ps);
         }
