@@ -45,3 +45,12 @@ float* simpleTransformRotate(float matrix[3][3], float angle, float coords[3]) {
 
     return res_coords;
 }
+
+float* MirrorXY(float coords[3]) {
+    float* res_coords = (float*)calloc(3, sizeof(float));
+    if (res_coords == nullptr)
+        return nullptr;
+
+    res_coords[0] = coords[0], res_coords[1] = -coords[1], res_coords[2] = 1;
+    return res_coords;
+}
