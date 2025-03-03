@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "lab1.h"
 #include "affineTransform.h"
+#include <math.h>
 
 #define MAX_LOADSTRING 100
 
@@ -203,8 +204,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 float* sc_stop = simpleTransformScale(mat, res_finish);
 
                 // И вращаем увеличенные часы
-                float* rot_start = simpleTransformRotate(mat, rot, sc_start);
-                float* rot_stop = simpleTransformRotate(mat, rot, sc_stop);
+                float* rot_start = simpleTransformRotate(mat, M_PI/180, sc_start);
+                float* rot_stop = simpleTransformRotate(mat, M_PI/180, sc_stop);
 
                 MoveToEx(hdc, rot_start[0], rot_start[1], NULL);
                 LineTo(hdc, rot_stop[0], rot_stop[1]);
