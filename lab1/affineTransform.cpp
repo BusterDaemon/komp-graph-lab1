@@ -33,17 +33,47 @@ float* simpleTransformScale(float matrix[3][3], float coords[3]) {
     return res_coords;
 }
 
-float* simpleTransformRotate(float matrix[3][3], float angle, float coords[3]) {
-    float rad = acos(-1);
-    float *res_coords = (float*)calloc(3, sizeof(float));
-    if (res_coords == nullptr)
+float* simpleTransformRotate(float matrix[3][3], float rot_matrix[3][3], float coords[3]) {
+    float **pos_offset_mat = (float**)calloc(3, sizeof(float*));
+    if (pos_offset_mat == nullptr)
         return nullptr;
+    for (size_t i = 0; i < 3; i++) {
+        pos_offset_mat[i] = (float*)calloc(3, sizeof(float));
+        if (pos_offset_mat[i] == nullptr)
+            return nullptr;
+        pos_offset_mat[i][i] = 1;
+        if (i == 2) {
+            pos_offset_mat[2][0] = matrix[2][0];
+            pos_offset_mat[2][1] = matrix[2][1];
+        }
+    }
 
+    float** neg_offset_mat = (float**)calloc(3, sizeof(float*));
+    if (neg_offset_mat == nullptr)
+        return nullptr;
+    for (size_t i = 0; i < 3; i++) {
+        neg_offset_mat[i] = (float*)calloc(3, sizeof(float));
+        if (pos_offset_mat[i] == nullptr) return nullptr;
+        pos_offset_mat[i][i] = 1;
+        if (i == 2) {
+            pos_offset_mat[2][0] = -matrix[2][0];
+            pos_offset_mat[2][1] = -matrix[2][1];
+        }
+    }
+
+    float** rotation = (float**)calloc(3, sizeof(float*));
+    if (rotation == nullptr)
+        return nullptr;
+    for (size_t i = 0; i < 3; i++)
+        rotation[i] = (float*)calloc(3, sizeof(float));
+
+    /*
     res_coords[2] = 1;
     res_coords[0] = coords[0] * cos(rad) - (coords[1]) * sin(rad) + 430;
     res_coords[1] = coords[0] * sin(rad) + (coords[1]) * cos(rad) + 430;
+    */
 
-    return res_coords;
+    return nullptr;
 }
 
 float* MirrorXY(float coords[3]) {

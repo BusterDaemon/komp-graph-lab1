@@ -146,6 +146,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
+        RECT rocli;
+        GetClientRect(hWnd, &rocli);
             float testCoords[3] = { 15.0, 12.0, 1.0 };
             float testMatrix[3][3] = {
                 {1.0, 2.0, 3.0},
@@ -173,8 +175,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             };
 
             float mat[3][3] = {
-                {2, 0, 0},
-                {0, 2, 0},
+                {2.5, 0, 0},
+                {0, -1.5, 0},
                 {10, 10, 1}
              };
 
@@ -193,6 +195,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...
+            //draw simple
             for (int i = 0; i < _countof(coords); i++) {
                 float startCoords[3] = {
                     coords[i][0], coords[i][1], 1.0
@@ -202,30 +205,73 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 };
 
                 // Передвигаем куда надо
-                float *res_start = simpleTransformMove(mat, startCoords);
-                float *res_finish = simpleTransformMove(mat, finCoords);
+                float* res_start = simpleTransformMove(mat, startCoords);
+                float* res_finish = simpleTransformMove(mat, finCoords);
 
-                // Теперь увеличиваем полученные координаты
-                float* sc_start = simpleTransformScale(mat, res_start);
-                float* sc_stop = simpleTransformScale(mat, res_finish);
-
-                // И вращаем увеличенные часы
-                /*float* rot_start = simpleTransformRotate(mat, M_PI/180, sc_start);
-                float* rot_stop = simpleTransformRotate(mat, M_PI/180, sc_stop);*/
-
-                // Отражаем объект
-                float* mir_start = MirrorXY(sc_start);
-                float* mir_end = MirrorXY(sc_stop);
-
-                float* the_start_end = simpleTransformMove(moveSome, mir_start);
-                float* the_end_end = simpleTransformMove(moveSome, mir_end);
-
-                MoveToEx(hdc, the_start_end[0], the_start_end[1], NULL);
-                LineTo(hdc, the_end_end[0], the_end_end[1]);
+                MoveToEx(hdc, res_start[0], res_start[1], NULL);
+                LineTo(hdc, res_finish[0], res_finish[1]);
 
                 free(res_start);
                 free(res_finish);
             }
+
+            mat[2][0] = 300;
+            // draw scale
+            for (int i = 0; i < _countof(coords); i++) {
+                float startCoords[3] = {
+                    coords[i][0], coords[i][1], 1.0
+                };
+                float finCoords[3] = {
+                    coords[i][2], coords[i][3], 1.0
+                };
+
+                // Передвигаем куда надо
+                /*float* res_start = simpleTransformMove(mat, startCoords);
+                float* res_finish = simpleTransformMove(mat, finCoords);*/
+                float* sc_start = simpleTransformScale(mat, startCoords);
+                float* sc_end = simpleTransformScale(mat, finCoords);
+                float* end_coord = simpleTransformMove(mat, sc_start);
+                float* end_end_coord = simpleTransformMove(mat, sc_end);
+
+                MoveToEx(hdc, end_coord[0], end_coord[1], NULL);
+                LineTo(hdc, end_end_coord[0], end_end_coord[1]);
+
+                /*free(res_start);
+                free(res_finish);*/
+            }
+            //for (int i = 0; i < _countof(coords); i++) {
+            //    float startCoords[3] = {
+            //        coords[i][0], coords[i][1], 1.0
+            //    };
+            //    float finCoords[3] = {
+            //        coords[i][2], coords[i][3], 1.0
+            //    };
+
+            //    // Передвигаем куда надо
+            //    float *res_start = simpleTransformMove(mat, startCoords);
+            //    float *res_finish = simpleTransformMove(mat, finCoords);
+
+            //    // Теперь увеличиваем полученные координаты
+            //    float* sc_start = simpleTransformScale(mat, res_start);
+            //    float* sc_stop = simpleTransformScale(mat, res_finish);
+
+            //    // И вращаем увеличенные часы
+            //    /*float* rot_start = simpleTransformRotate(mat, M_PI/180, sc_start);
+            //    float* rot_stop = simpleTransformRotate(mat, M_PI/180, sc_stop);*/
+
+            //    // Отражаем объект
+            //    float* mir_start = MirrorXY(sc_start);
+            //    float* mir_end = MirrorXY(sc_stop);
+
+            //    float* the_start_end = simpleTransformMove(moveSome, mir_start);
+            //    float* the_end_end = simpleTransformMove(moveSome, mir_end);
+
+            //    MoveToEx(hdc, the_start_end[0], the_start_end[1], NULL);
+            //    LineTo(hdc, the_end_end[0], the_end_end[1]);
+
+            //    free(res_start);
+            //    free(res_finish);
+            //}
             EndPaint(hWnd, &ps);
         }
         break;
