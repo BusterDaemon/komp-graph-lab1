@@ -33,8 +33,10 @@ float* simpleTransformScale(float matrix[3][3], float coords[3]) {
     return res_coords;
 }
 
-float* simpleTransformRotate(float matrix[3][3], float rot_matrix[3][3], float coords[3]) {
-    float **pos_offset_mat = (float**)calloc(3, sizeof(float*));
+float* simpleTransformRotate(float matrix[3][3], float rot_matrix[3][3], float* coords) {
+    
+    
+    float** pos_offset_mat = (float**)calloc(3, sizeof(float*));
     if (pos_offset_mat == nullptr)
         return nullptr;
     for (size_t i = 0; i < 3; i++) {
@@ -54,10 +56,10 @@ float* simpleTransformRotate(float matrix[3][3], float rot_matrix[3][3], float c
     for (size_t i = 0; i < 3; i++) {
         neg_offset_mat[i] = (float*)calloc(3, sizeof(float));
         if (pos_offset_mat[i] == nullptr) return nullptr;
-        pos_offset_mat[i][i] = 1;
+        neg_offset_mat[i][i] = 1;
         if (i == 2) {
-            pos_offset_mat[2][0] = -matrix[2][0];
-            pos_offset_mat[2][1] = -matrix[2][1];
+            neg_offset_mat[2][0] = -matrix[2][0];
+            neg_offset_mat[2][1] = -matrix[2][1];
         }
     }
 
@@ -66,14 +68,29 @@ float* simpleTransformRotate(float matrix[3][3], float rot_matrix[3][3], float c
         return nullptr;
     for (size_t i = 0; i < 3; i++)
         rotation[i] = (float*)calloc(3, sizeof(float));
+    
+    
+    
+    
+    float middle_stolbnyak_1[3] = {
+        coords[0] * neg_offset_mat[0][0] + coords[1] * neg_offset_mat[1][0] + coords[2] * neg_offset_mat[2][0],
+        coords[0] * neg_offset_mat[0][1] + coords[1] * neg_offset_mat[1][1] + coords[2] * neg_offset_mat[2][1],
+        coords[0] * neg_offset_mat[0][2] + coords[1] * neg_offset_mat[1][2] + coords[2] * neg_offset_mat[2][2]
+    };
 
-    /*
-    res_coords[2] = 1;
-    res_coords[0] = coords[0] * cos(rad) - (coords[1]) * sin(rad) + 430;
-    res_coords[1] = coords[0] * sin(rad) + (coords[1]) * cos(rad) + 430;
-    */
+    float middle_stroka_2[3] = {
+        middle_stolbnyak_1[0] * cos(rot_matrix[0][0]) + middle_stolbnyak_1[0] * -sin(rot_matrix[1][0]) + middle_stolbnyak_1[0] * 0,
+        middle_stolbnyak_1[1] * sin(rot_matrix[0][1]) + middle_stolbnyak_1[1] * cos(rot_matrix[1][1]) + middle_stolbnyak_1[1] * 0,
+        middle_stolbnyak_1[2]
+    };
+    float res_coords[3] = {
+        middle_stroka_2[0] * pos_offset_mat[0][0] + middle_stroka_2[1] * pos_offset_mat[1][0] + middle_stroka_2[2] * pos_offset_mat[2][0],
+        middle_stroka_2[1] * pos_offset_mat[0][1] + middle_stroka_2[1] * pos_offset_mat[1][1] + middle_stroka_2[2] * pos_offset_mat[2][1],
+        middle_stroka_2[2] * pos_offset_mat[0][2] + middle_stroka_2[1] * pos_offset_mat[1][2] + middle_stroka_2[2] * pos_offset_mat[2][2]
+    };
+    
 
-    return nullptr;
+    return res_coords;
 }
 
 float* MirrorXY(float coords[3]) {
